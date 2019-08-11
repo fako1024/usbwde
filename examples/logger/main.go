@@ -21,6 +21,7 @@ func main() {
 	if err != nil {
 		logrus.StandardLogger().Fatalf("Error opening %s: %s", devicePath, err)
 	}
+	defer sensor.Close()
 
 	// Continuously throw a log message upon reception of updated data
 	for {

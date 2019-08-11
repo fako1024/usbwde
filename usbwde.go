@@ -42,6 +42,11 @@ func New(socket string) (*USBWDE, error) {
 	}, nil
 }
 
+// Close closes the connection to the device
+func (s *USBWDE) Close() error {
+	return s.port.Close()
+}
+
 // Read extracts a single data point from the sensor / device
 func (s *USBWDE) Read() (*DataPoint, error) {
 
