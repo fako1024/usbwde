@@ -39,6 +39,13 @@ func main() {
 // readLoop continuously reads lines from the device
 func readLoop() {
 
+	// Recover from potential panic when reading from device
+	defer func() {
+		if r := recover(); r != nil {
+			logrus.StandardLogger().Errorf("Panic recovered in readLoop(): %s", r)
+		}
+	}()
+
 	// Initialize a new USBWDE sensor / station
 	sensor, err := usbwde.New(devicePath)
 	if err != nil {
