@@ -1,5 +1,17 @@
 # Simple go package to read data from USB-WDE weather data logger (ELV)
-This package allows to extract structured data from a USB-WDE weather station device (available from [here](https://www.elv.de/usb-wetterdaten-empfaenger-usb-wde1-komplettbausatz-1.html)). Usage is fairly trivial (see examples directory for a simple console logger implementation):
+This package allows to extract structured data from a USB-WDE weather station device (available from [here](https://www.elv.de/usb-wetterdaten-empfaenger-usb-wde1-komplettbausatz-1.html)). Usage is fairly trivial (see examples directory for a simple console logger implementation).
+
+## Features
+- Extraction of USBWDE RF sensor data
+	- Up to 8 temperature / humidity sensors
+	- Hybrid sensor providing temperature / humidity, wind speed and precipitation data
+
+## Installation
+```bash
+go get -u github.com/fako1024/usbwde
+```
+
+## Example
 ```go
 // Initialize a new USBWDE sensor / station
 sensor, err := usbwde.New("/dev/ttyUSB0")
