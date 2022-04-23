@@ -153,7 +153,16 @@ func normalizeHybridSensor(in []string) (result HybridSensor, err error) {
 	if result.WindSpeed, err = normalize(in[21]); err != nil {
 		return
 	}
-	if result.Precipitation, err = strconv.Atoi(in[22]); err != nil {
+	if in[22] == "" {
+		result.Precipitation = 0
+	} else {
+		if result.Precipitation, err = strconv.Atoi(in[22]); err != nil {
+			return
+		}
+	}
+
+	if in[23] == "" {
+		result.IsRaining = false
 		return
 	}
 
