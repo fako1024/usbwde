@@ -20,7 +20,7 @@ type DataPoint struct {
 	Temperature [8]float64
 	Humidity    [8]float64
 
-	HybridSensor
+	HybridSensor HybridSensor
 }
 
 // String returns a well-formatted string for the data point, fulfilling the Stringer interface
