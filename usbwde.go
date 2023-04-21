@@ -56,35 +56,47 @@ func (s *USBWDE) Read() (*DataPoint, error) {
 		return nil, err
 	}
 
+	return s.parse(rawData)
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+// parse parses / normalizes the raw data received from the socket
+func (s *USBWDE) parse(rawData []byte) (*DataPoint, error) {
+
 	// Split result string by sepearator character and perform sanity check
 	splitString := strings.Split(string(rawData), ";")
 	if len(splitString) != 25 {
-		return nil, fmt.Errorf("Invalid data received: %s", string(rawData))
+		return nil, fmt.Errorf("invalid data received: %s", string(rawData))
 	}
 
 	// Extract & format temperature values
 	temperatures, err := normalizeTemperature(splitString)
 	if err != nil {
-		return nil, fmt.Errorf("Failed to parse temperature values from %s: %s", splitString, err)
+		return nil, fmt.Errorf("failed to parse temperature values from %s: %w", splitString, err)
 	}
 
 	// Extract & format humidity values
 	humidities, err := normalizeHumidity(splitString)
 	if err != nil {
-		return nil, fmt.Errorf("Failed to parse humidity values from %s: %s", splitString, err)
+		return nil, fmt.Errorf("failed to parse humidity values from %s: %w", splitString, err)
+	}
+
+	hybridSensor, err := normalizeHybridSensor(splitString)
+	if err != nil {
+		return nil, fmt.Errorf("failed to parse hybrid sensor values from %s: %w", splitString, err)
 	}
 
 	// Create & return a data point
 	return &DataPoint{
-		TimeStamp:   time.Now(),
-		Temperature: temperatures,
-		Humidity:    humidities,
+		TimeStamp:    time.Now(),
+		Temperature:  temperatures,
+		Humidity:     humidities,
+		HybridSensor: hybridSensor,
 	}, nil
 }
 
-////////////////////////////////////////////////////////////////////////////////
-
-// Read extracts data from the port
+// readRawData extracts data from the port
 func (s *USBWDE) readRawData() ([]byte, error) {
 
 	// Wrap reader around port
@@ -126,5 +138,26 @@ func normalizeHumidity(in []string) (result [8]float64, err error) {
 			return
 		}
 	}
+	return
+}
+
+// normalizeHybridSensor converts the hybrid sensor data to well-defined values
+func normalizeHybridSensor(in []string) (result HybridSensor, err error) {
+
+	if result.Temperature, err = normalize(in[19]); err != nil {
+		return
+	}
+	if result.Humidity, err = normalize(in[20]); err != nil {
+		return
+	}
+	if result.WindSpeed, err = normalize(in[21]); err != nil {
+		return
+	}
+	if result.Precipitation, err = strconv.Atoi(in[22]); err != nil {
+		return
+	}
+
+	result.IsRaining, err = strconv.ParseBool(in[23])
+
 	return
 }
