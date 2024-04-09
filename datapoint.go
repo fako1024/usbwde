@@ -3,8 +3,11 @@ package usbwde
 import (
 	"errors"
 	"fmt"
+	"math"
 	"time"
 )
+
+const ValueDelta = 0.000001
 
 // HybridSensor denotes the data from the hybrid sensor (if present)
 type HybridSensor struct {
@@ -53,14 +56,14 @@ func (p *DataPoint) String() string {
 // IsComplete returns if the data point has all fields set (and at least one of each temperature / Humidity is non-zero)
 func (p *DataPoint) IsComplete(includeHybridSensor bool) (bool, error) {
 	for i := 0; i < 8; i++ {
-		if p.Temperature[i] == 0.0 && p.Humidity[i] == 0.0 {
+		if math.Abs(p.Temperature[i]) < ValueDelta && p.Humidity[i] < ValueDelta {
 			return false, fmt.Errorf("missing temperature and humidity data for index %d", i)
 		}
 	}
 	if includeHybridSensor {
-		if p.HybridSensor.Temperature == 0.0 && p.HybridSensor.Humidity == 0.0 &&
-			p.HybridSensor.WindSpeed == 0.0 && !p.HybridSensor.IsRaining &&
-			p.HybridSensor.Precipitation == 0.0 {
+		if math.Abs(p.HybridSensor.Temperature) < ValueDelta && p.HybridSensor.Humidity < ValueDelta &&
+			math.Abs(p.HybridSensor.WindSpeed) < ValueDelta && !p.HybridSensor.IsRaining &&
+			p.HybridSensor.Precipitation == 0 {
 			return false, errors.New("missing hybrid sensor data")
 		}
 	}
