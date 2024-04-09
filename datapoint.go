@@ -1,6 +1,7 @@
 package usbwde
 
 import (
+	"errors"
 	"fmt"
 	"time"
 )
@@ -47,4 +48,21 @@ func (p *DataPoint) String() string {
 		p.HybridSensor.WindSpeed,
 		p.HybridSensor.IsRaining,
 		p.HybridSensor.Precipitation)
+}
+
+// IsComplete returns if the data point has all fields set (and at least one of each temperature / Humidity is non-zero)
+func (p *DataPoint) IsComplete(includeHybridSensor bool) (bool, error) {
+	for i := 0; i < 8; i++ {
+		if p.Temperature[i] == 0.0 && p.Humidity[i] == 0.0 {
+			return false, fmt.Errorf("missing temperature and humidity data for index %d", i)
+		}
+	}
+	if includeHybridSensor {
+		if p.HybridSensor.Temperature == 0.0 && p.HybridSensor.Humidity == 0.0 &&
+			p.HybridSensor.WindSpeed == 0.0 && !p.HybridSensor.IsRaining &&
+			p.HybridSensor.Precipitation == 0.0 {
+			return false, errors.New("missing hybrid sensor data")
+		}
+	}
+	return true, nil
 }
